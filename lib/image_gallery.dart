@@ -79,9 +79,6 @@ class _ImageGalleryState extends State<ImageGallery> {
         }
         _totalPages = (list['totalHits'] / 20).ceil();
         _currentPage++;
-        // if(_searchText.isEmpty){
-        //   _images = list['hits'];
-        // }
       });
     }
 
@@ -99,19 +96,22 @@ class _ImageGalleryState extends State<ImageGallery> {
 
   // search
   void _updateSearchQuery(String text) {
-    print('text $text');
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       setState(() {
         _searchText = text;
         _currentPage = 1;
       });
+      if (_searchText.isEmpty) {
+        _totalPages = 1;
+        _currentPage = 1;
+      }
       _getImages(); // get images based on searched text
     });
   }
 
   // Opens an image in full screen with an animation.
-  void _openFullScreen(BuildContext context, String imageUrl, String previewText,String name) {
+  void _openFullScreen(BuildContext context, String imageUrl, String previewText, String name) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => FullScreenImage(
         image: imageUrl,
@@ -148,7 +148,7 @@ class _ImageGalleryState extends State<ImageGallery> {
             ),
           ),
           Expanded(
-            child: _images.isNotEmpty || _searchText.isEmpty
+            child: _images.isNotEmpty
                 ? GridView.builder(
                     padding: const EdgeInsets.all(8.0),
                     controller: _scrollController,
@@ -168,7 +168,7 @@ class _ImageGalleryState extends State<ImageGallery> {
                       final image = _images[index];
 
                       return GestureDetector(
-                        onTap: () => _openFullScreen(context, image['largeImageURL'], image['tags'],image['previewURL'].toString().split('/').last),
+                        onTap: () => _openFullScreen(context, image['largeImageURL'], image['tags'], image['previewURL'].toString().split('/').last),
                         child: GridTile(
                           footer: GridTileBar(
                             backgroundColor: const Color.fromARGB(136, 36, 36, 36),
